@@ -1,14 +1,15 @@
-require_relative 'journey'
+require_relative 'journey_log'
 
 class Oyster_Card
-    attr_reader :balance, :starting_station, :journeys
+    attr_reader :balance, :starting_station, :journey_log
 
     @@MAX_BALANCE = 90
     @@MIN_FARE = 1
+    @@PENALTY_FARE = 6
 
     def initialize()
         @balance = 0
-        @journeys = []
+        @journey_log = Journey_log.new
         @current_journey = nil
     end
 
@@ -24,38 +25,43 @@ class Oyster_Card
     end
 
     def touch_in(station)
-        @balance >= @@MIN_FARE ? @current_journey = Journey.new : raise("You cannot cover minimum fare.")
-        @current_journey.start_journey(station)
+        @balance >= @@MIN_FARE ? @journey_log.start_journey(station) : raise("You cannot cover minimum fare.")
         "You have touched in at #{station}."
     end
 
     def touch_out(station)
-        deduct
-        @current_journey.finish_journey(station)
-        add_journey(@current_journey)
-        @current_journey = nil
-        "You have touched out at #{station}."
+        if check_penalty
+            charge_penalty
+        else
+            deduct(@journey_log.current_journey.calculate_fare)
+            @journey_log.finish_journey(station)
+            "You have touched out at #{station}."
+        end
     end
 
     def in_journey?
-        if @current_journey != nil
-            !@current_journey.complete
+        if @journey_log.current_journey != nil
+            !journey_log.current_journey.complete
         else
             false
         end
     end
 
     private
-        def deduct
-            @balance -= @@MIN_FARE
+        def deduct(monees)
+            @balance -= monees
         end
 
         def print_balance
             "Your balance is now £#{@balance}."
         end
 
-        def add_journey(journey)
-            @journeys << journey
+        def check_penalty
+            @journey_log.current_journey == nil
+        end
+
+        def charge_penalty
+            @balance -= @PENALTY_FARE
         end
 
 end

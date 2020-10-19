@@ -6,7 +6,7 @@ RSpec.describe Oyster_Card do
 
     describe 'Initialize' do
         it 'Sets journeys to 0' do
-            expect(subject.journeys.count).to eql 0
+            expect(subject.journey_log.journeys.count).to eql 0
         end
     end
 
@@ -76,7 +76,7 @@ RSpec.describe Oyster_Card do
             subject.top_up(2)
             subject.touch_in(station)
             subject.touch_out(station2)
-            expect(subject.journeys.count).to eql 1
+            expect(subject.journey_log.journeys.count).to eql 1
         end
     end
 
