@@ -1,7 +1,14 @@
 require 'card'
 
 RSpec.describe Oyster_Card do
-    
+    let(:station) {double("KX")}
+
+    describe 'Initialize' do
+        it 'Sets journeys to 0' do
+            expect(subject.journeys.count).to eql 0
+        end
+    end
+
     describe 'Balance' do
         it 'Returns the balance' do
             expect(subject.balance).to eq 0
@@ -27,7 +34,6 @@ RSpec.describe Oyster_Card do
     end
 
     describe 'in_journey?' do
-        let(:station) {double("KX")}
         it 'Returns true if in transit' do
             subject.top_up(2)
             subject.touch_in(station)
@@ -40,7 +46,6 @@ RSpec.describe Oyster_Card do
     end
 
     describe 'touch_in' do
-        let(:station) {double("KX")}
         it 'Sets the starting station attr and returns it' do
             subject.top_up(2)
             expect(subject.touch_in(station)).to eq "You have touched in at #{station}."
@@ -52,7 +57,6 @@ RSpec.describe Oyster_Card do
     end
 
     describe 'touch_out' do
-        let(:station) {double("Blackfriars")}
         it 'Sets the finishing station' do
             expect(subject.touch_out(station)).to eq "You have touched out at #{station}."
         end
@@ -60,6 +64,16 @@ RSpec.describe Oyster_Card do
         it 'Deducts min fare from balance' do
             subject.top_up(2)
             expect{subject.touch_out(station)}.to change{subject.balance}.by(-1)
+        end
+    end
+
+    describe 'Add journey' do
+        let(:station2) {double("KX")}
+        it 'Stores a journey when user touches out' do
+            subject.top_up(2)
+            subject.touch_in(station)
+            subject.touch_out(station2)
+            expect(subject.journeys.count).to eql 1
         end
     end
 
